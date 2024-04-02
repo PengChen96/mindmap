@@ -39,6 +39,10 @@ class Keyboard {
     const { key, ctrlKey, shiftKey, metaKey } = event;
 
     if (textEditor.isShowing()) {
+      // shift + enter 换行
+      if (shiftKey && key === 'Enter') {
+        return;
+      }
       switch (key) {
         case 'Escape': {
           textEditor.hide();

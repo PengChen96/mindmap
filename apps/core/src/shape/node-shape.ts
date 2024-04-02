@@ -67,6 +67,9 @@ class NodeShape {
     const shapeY = hasValidPosition ? y : invisibleY;
 
     this.labelShape = paper.text(shapeX, shapeY, label);
+    this.labelShape.attr({
+      "text-anchor": "start", // 设置文本居左
+    });
     this.borderShape = paper.rect(shapeX, shapeY, 0, 0, 4);
     this.rectShape = paper.rect(shapeX, shapeY, 0, 0, 4);
     this.shapeSet = paper.set()
@@ -228,8 +231,9 @@ class NodeShape {
   private setPosition(x: number, y: number): void {
     const { labelShape, borderShape, rectShape, imageShape, paddingWidth, rectHeight, imageData } = this;
 
-    const labelBBox = labelShape.getBBox();
-    const paddingHeight = rectHeight - labelBBox.height;
+    // const labelBBox = labelShape.getBBox();
+    // const paddingHeight = rectHeight - labelBBox.height;
+    const paddingHeight = 20;
 
     const leftShape = imageData?.toward === 'right' ? labelShape : imageShape;
     const rightShape = imageData?.toward === 'right' ? imageShape : labelShape;
