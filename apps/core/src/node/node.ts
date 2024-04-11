@@ -12,7 +12,7 @@ import type { DragEventMap } from '../drag/drag';
 import type { EdgeShape } from './shape-generator';
 import type { EventNames as ShapeEventNames, EventArgs as ShapeEventArgs } from '../shape/common/shape-event-emitter';
 import type { StyleType } from '../shape/common/node-shape-style';
-import type { ImageData } from '../types';
+import type { ImageData, ButtonData } from '../types';
 
 export interface TraverseOptions {
   node: Node;
@@ -47,6 +47,7 @@ export interface NodeOptions {
   isExpand?: boolean;
   viewport: Viewport;
   imageData?: ImageData | null;
+  buttonData?: ButtonData | null;
   link?: string;
 }
 
@@ -60,6 +61,7 @@ class Node {
   private readonly expander: Expander;
   private readonly drag: Drag | null = null;
   private readonly _imageData: ImageData | null = null;
+  private readonly _buttonData: ButtonData | null = null;
   private readonly _link: string = '';
   private _label: string;
   private _direction: Direction;
@@ -79,6 +81,7 @@ class Node {
     isExpand,
     viewport,
     imageData,
+    buttonData,
     link,
   }: NodeOptions) {
     this.paper = paper;
@@ -89,6 +92,7 @@ class Node {
     this._label = label;
     this._children = [];
     this._imageData = imageData || null;
+    this._buttonData = buttonData || null;
     this._link = link || '';
 
     this.shapeGenerator = new ShapeGenerator({
@@ -98,6 +102,7 @@ class Node {
       direction,
       father,
       imageData,
+      buttonData,
       link,
     });
 
@@ -134,6 +139,7 @@ class Node {
   public get children() { return this._children; }
   public get isExpand() { return this.expander.getIsExpand(); }
   public get imageData() { return this._imageData; }
+  public get buttonData() { return this._buttonData; }
   public get link() { return this._link; }
 
   public getDirectionChildren(direction: Direction): Node[] {

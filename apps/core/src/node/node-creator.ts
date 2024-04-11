@@ -4,7 +4,7 @@ import Viewport from '../viewport';
 import { generateId } from '../helper';
 import type { RaphaelPaper } from 'raphael';
 import type { NodeOptions, NodeEventMap, NodeEventNames } from '../node/node';
-import type { ImageData } from '../types';
+import type { ImageData, ButtonData } from '../types';
 
 export interface CreateNodeParams {
   id?: NodeOptions['id'];
@@ -16,6 +16,7 @@ export interface CreateNodeParams {
   father?: NodeOptions['father'];
   isExpand?: NodeOptions['isExpand'];
   imageData?: ImageData;
+  buttonData?: ButtonData;
   link?: string;
 }
 
@@ -67,6 +68,7 @@ class NodeCreator {
     father,
     isExpand,
     imageData,
+    buttonData,
     link,
   }: CreateNodeParams): Node => {
     const newNode = new Node({
@@ -81,6 +83,7 @@ class NodeCreator {
       isExpand,
       viewport: this.viewport,
       imageData,
+      buttonData,
       link,
     });
 

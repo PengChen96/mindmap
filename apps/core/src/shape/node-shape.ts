@@ -5,7 +5,7 @@ import { isMobile } from '../helper';
 import type { EventNames, EventArgs } from './common/shape-event-emitter';
 import type { RaphaelPaper, RaphaelSet, RaphaelElement, RaphaelAxisAlignedBoundingBox, RaphaelAttributes } from 'raphael';
 import type { StyleType } from './common/node-shape-style';
-import type { ImageData } from '../types';
+import type { ImageData, ButtonData } from '../types';
 
 const invisibleX = -999999;
 const invisibleY = -999999;
@@ -24,7 +24,9 @@ export interface NodeShapeOptions {
   labelBaseAttr?: Partial<RaphaelAttributes>;
   rectBaseAttr?: Partial<RaphaelAttributes>;
   borderBaseAttr?: Partial<RaphaelAttributes>;
+  buttonBaseAttr?: Partial<RaphaelAttributes>;
   imageData?: ImageData | null;
+  buttonData?: ButtonData | null;
   link?: string;
 }
 
@@ -34,12 +36,14 @@ class NodeShape {
   private readonly borderShape: RaphaelElement;
   private readonly labelShape: RaphaelElement;
   private readonly rectShape: RaphaelElement;
+  private readonly buttonShape?: RaphaelElement;
   private readonly imageShape: RaphaelElement | null = null;
   private readonly paddingWidth: number;
   private readonly rectHeight: number;
   private readonly shapeEventEmitter: ShapeEventEmitter;
   private readonly nodeShapeStyle: NodeShapeStyle;
   private readonly imageData: ImageData | null = null;
+  private readonly buttonData: ButtonData | null = null;
   private label: string;
   private isHide: boolean = false;
   private isHoverInCalled: boolean = false;
@@ -53,7 +57,9 @@ class NodeShape {
     labelBaseAttr,
     rectBaseAttr,
     borderBaseAttr,
+    buttonBaseAttr,
     imageData,
+    buttonData,
     link,
   }: NodeShapeOptions) {
     this.paper = paper;
@@ -76,6 +82,16 @@ class NodeShape {
       .push(this.labelShape)
       .push(this.borderShape)
       .push(this.rectShape);
+
+    if (buttonData) {
+      this.buttonShape = paper.rect(shapeX, shapeY, 24, 24, 4);
+      this.buttonShape['mousedown'](() => {
+        if (buttonData.onClick) {
+          buttonData.onClick(buttonData.params);
+        }
+      });
+      this.shapeSet.push(this.buttonShape);
+    }
 
     if (imageData) {
       this.imageShape = paper.image(imageData.src, shapeX, shapeY, imageData.width, imageData.height);
@@ -100,9 +116,11 @@ class NodeShape {
       labelShape: this.labelShape,
       borderShape: this.borderShape,
       rectShape: this.rectShape,
+      buttonShape: this.buttonShape,
       labelBaseAttr,
       rectBaseAttr,
       borderBaseAttr,
+      buttonBaseAttr,
     });
     this.nodeShapeStyle.setBaseStyle();
 
@@ -229,7 +247,7 @@ class NodeShape {
   }
 
   private setPosition(x: number, y: number): void {
-    const { labelShape, borderShape, rectShape, imageShape, paddingWidth, rectHeight, imageData } = this;
+    const { labelShape, borderShape, rectShape, imageShape, buttonShape, paddingWidth, rectHeight, imageData } = this;
 
     // const labelBBox = labelShape.getBBox();
     // const paddingHeight = rectHeight - labelBBox.height;
@@ -241,12 +259,18 @@ class NodeShape {
     const leftBBox = leftShape?.getBBox() || defaultBBox;
     const rightBBox = rightShape?.getBBox() || defaultBBox;
 
+    const buttonBBox = buttonShape?.getBBox() || defaultBBox;
+    let buttonGap = 0;
+    if (buttonShape) {
+      buttonGap = 8;
+    }
+
     let imageGap = 0;
     if (imageShape) {
       imageGap = (imageData?.gap !== undefined && imageData?.gap >= 0) ? imageData?.gap : 8;
     }
 
-    const contentWidth = leftBBox.width + rightBBox.width + paddingWidth + imageGap;
+    const contentWidth = leftBBox.width + rightBBox.width + paddingWidth + imageGap + buttonBBox?.width + buttonGap;
     const contentHeight = paddingHeight + Math.max(leftBBox.height, rightBBox.height);
 
     rectShape.attr({
@@ -262,11 +286,15 @@ class NodeShape {
     const leftShapeX = x + (paddingWidth / 2);
     const leftShapeY = y + ((contentHeight - leftBBox.height) / 2);
     const rightShapeX = leftShapeX + leftBBox.width + imageGap;
-    const rightShapeY = y + ((contentHeight - rightBBox.height) / 2)
+    const rightShapeY = y + ((contentHeight - rightBBox.height) / 2);
+
+    const buttonShapeX = rightShapeX + rightBBox.width + buttonGap;
+    const buttonShapeY = y+6;
 
     this.shapeTranslateTo(borderShape, x - borderPadding / 2, y - borderPadding / 2);
     leftShape && this.shapeTranslateTo(leftShape, leftShapeX, leftShapeY);
     rightShape && this.shapeTranslateTo(rightShape, rightShapeX, rightShapeY);
+    buttonShape && this.shapeTranslateTo(buttonShape, buttonShapeX, buttonShapeY);
   }
 
   private initHover(): void {

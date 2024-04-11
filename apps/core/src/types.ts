@@ -12,6 +12,17 @@ export interface ImageData {
   toward: 'left' | 'right';
 }
 
+export interface ButtonData {
+  // src?: string;
+  // width?: number;
+  // height?: number;
+  // gap?: number;
+  // toward?: 'left' | 'right';
+  //
+  params?: any;
+  onClick?: (buttonData: any) => void
+}
+
 export interface NodeData {
   children: string[];
   label: string;
@@ -19,6 +30,7 @@ export interface NodeData {
   isRoot?: boolean;
   isExpand?: boolean;
   imageData?: ImageData;
+  buttonData?: ButtonData;
   link?: string;
 }
 

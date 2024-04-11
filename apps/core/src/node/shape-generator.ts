@@ -9,7 +9,7 @@ import { createGrandchildEdgeShape, GrandchildEdgeShape } from '../shape/grandch
 import { getDepthType, DepthType } from '../helper';
 import { Direction } from '../types';
 import type { RaphaelPaper } from 'raphael';
-import type { ImageData } from '../types';
+import type { ImageData, ButtonData } from '../types';
 
 export type EdgeShape = FirstEdgeShape | GrandchildEdgeShape;
 
@@ -20,6 +20,7 @@ class ShapeGenerator {
   private readonly label: string;
   private readonly father: Node | null = null;
   private readonly imageData: ImageData | null = null;
+  private readonly buttonData: ButtonData | null = null;
   private readonly link: string = '';
   private direction: Direction;
   public constructor({
@@ -29,6 +30,7 @@ class ShapeGenerator {
     direction,
     father,
     imageData,
+    buttonData,
     link,
   }: {
     paper: RaphaelPaper,
@@ -37,6 +39,7 @@ class ShapeGenerator {
     direction: Direction,
     father: Node | null,
     imageData?: ImageData | null;
+    buttonData?: ButtonData | null;
     link?: string;
   }) {
     this.paper = paper;
@@ -45,6 +48,7 @@ class ShapeGenerator {
     this.father = father;
     this.direction = direction;
     this.imageData = imageData || null;
+    this.buttonData = buttonData || null;
     this.link = link || '';
   }
 
@@ -54,6 +58,7 @@ class ShapeGenerator {
       depth,
       label,
       imageData,
+      buttonData,
       link,
     } = this;
 
@@ -63,6 +68,7 @@ class ShapeGenerator {
       y,
       label,
       imageData,
+      buttonData,
       link,
     };
 

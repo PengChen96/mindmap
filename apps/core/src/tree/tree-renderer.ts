@@ -125,6 +125,7 @@ class TreeRenderer {
       father,
       isExpand: nodeData.isExpand,
       imageData: nodeData.imageData,
+      buttonData: nodeData.buttonData,
       link: nodeData.link,
     });
 

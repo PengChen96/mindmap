@@ -20,6 +20,12 @@ const borderDefaultAttr: Partial<RaphaelAttributes> = {
   'fill-opacity': 0,
   'opacity': 0,
 };
+const buttonDefaultAttr: Partial<RaphaelAttributes> = {
+  'stroke': '#ff8040',
+  'fill': '#ff8040',
+  'opacity': 0.5,
+  'cursor': 'pointer',
+};
 
 export type StyleType = 'select' | 'overlay' | 'disable' | 'base' | 'hover';
 
@@ -28,9 +34,11 @@ class NodeShapeStyle {
   private readonly borderShape: RaphaelElement;
   private readonly labelShape: RaphaelElement;
   private readonly rectShape: RaphaelElement;
+  private readonly buttonShape?: RaphaelElement;
   private readonly labelBaseAttr: Partial<RaphaelAttributes>;
   private readonly rectBaseAttr: Partial<RaphaelAttributes>;
   private readonly borderBaseAttr: Partial<RaphaelAttributes>;
+  private readonly buttonBaseAttr: Partial<RaphaelAttributes>;
   private collaborateStyle: { name: string; color: string; } | null = null;
   private styleType: StyleType = 'base';
   public constructor({
@@ -38,31 +46,40 @@ class NodeShapeStyle {
     labelShape,
     borderShape,
     rectShape,
+    buttonShape,
     labelBaseAttr,
     rectBaseAttr,
     borderBaseAttr,
+    buttonBaseAttr,
   }: {
     shapeSet: RaphaelSet;
     borderShape: RaphaelElement;
     labelShape: RaphaelElement;
     rectShape: RaphaelElement;
+    buttonShape?: RaphaelElement;
     labelBaseAttr?: Partial<RaphaelAttributes>;
     borderBaseAttr?: Partial<RaphaelAttributes>;
     rectBaseAttr?: Partial<RaphaelAttributes>;
+    buttonBaseAttr?: Partial<RaphaelAttributes>;
   }) {
     this.shapeSet = shapeSet;
     this.labelShape = labelShape;
     this.borderShape = borderShape;
     this.rectShape = rectShape;
+    if (buttonShape) {
+      this.buttonShape = buttonShape;
+    }
     this.labelBaseAttr = { ...labelDefaultAttr, ...labelBaseAttr, };
     this.rectBaseAttr = { ...rectDefaultAttr, ...rectBaseAttr, };
     this.borderBaseAttr = { ...borderDefaultAttr, ...borderBaseAttr, };
+    this.buttonBaseAttr = { ...buttonDefaultAttr, ...buttonBaseAttr, };
   }
 
   public setBaseStyle(): void {
     this.labelShape.attr(this.labelBaseAttr);
     this.borderShape.attr(this.borderBaseAttr);
     this.rectShape.attr(this.rectBaseAttr);
+    this.buttonShape && this.buttonShape.attr(this.buttonBaseAttr);
   }
 
   public setStyle(styleType: StyleType): void {
@@ -71,6 +88,11 @@ class NodeShapeStyle {
         this.setBaseStyle();
         this.borderShape.attr({
           'stroke': '#3498DB',
+          'opacity': 1,
+        });
+        this.buttonShape && this.buttonShape.attr({
+          'stroke': '#ff8040',
+          'fill': '#ff8040',
           'opacity': 1,
         });
         break;
@@ -94,6 +116,11 @@ class NodeShapeStyle {
         this.borderShape.attr({
           'stroke': '#3498DB',
           'opacity': 0.5,
+        });
+        this.buttonShape && this.buttonShape.attr({
+          'stroke': '#ff8040',
+          'fill': '#ff8040',
+          'opacity': 0.8,
         });
         break;
       }
