@@ -6,6 +6,8 @@ import type { EventNames, EventArgs } from './common/shape-event-emitter';
 import type { RaphaelPaper, RaphaelSet, RaphaelElement, RaphaelAxisAlignedBoundingBox, RaphaelAttributes } from 'raphael';
 import type { StyleType } from './common/node-shape-style';
 import type { ImageData, ButtonData } from '../types';
+// @ts-ignore
+import eyeFill from "./eyeFill.svg";
 
 const invisibleX = -999999;
 const invisibleY = -999999;
@@ -84,7 +86,8 @@ class NodeShape {
       .push(this.rectShape);
 
     if (buttonData) {
-      this.buttonShape = paper.rect(shapeX, shapeY, 24, 24, 4);
+      // this.buttonShape = paper.rect(shapeX, shapeY, 24, 24, 4);
+      this.buttonShape = paper.image(eyeFill, shapeX, shapeY, 24, 24);
       this.buttonShape['mousedown'](() => {
         if (buttonData.onClick) {
           buttonData.onClick(buttonData.params);

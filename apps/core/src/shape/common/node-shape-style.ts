@@ -21,9 +21,9 @@ const borderDefaultAttr: Partial<RaphaelAttributes> = {
   'opacity': 0,
 };
 const buttonDefaultAttr: Partial<RaphaelAttributes> = {
-  'stroke': '#ff8040',
-  'fill': '#ff8040',
-  'opacity': 0.5,
+  // 'stroke': '#ff8040',
+  // 'fill': '#ff8040',
+  'opacity': 0,
   'cursor': 'pointer',
 };
 
@@ -91,8 +91,8 @@ class NodeShapeStyle {
           'opacity': 1,
         });
         this.buttonShape && this.buttonShape.attr({
-          'stroke': '#ff8040',
-          'fill': '#ff8040',
+          // 'stroke': '#ff8040',
+          // 'fill': '#ff8040',
           'opacity': 1,
         });
         break;
@@ -118,8 +118,8 @@ class NodeShapeStyle {
           'opacity': 0.5,
         });
         this.buttonShape && this.buttonShape.attr({
-          'stroke': '#ff8040',
-          'fill': '#ff8040',
+          // 'stroke': '#ff8040',
+          // 'fill': '#ff8040',
           'opacity': 0.8,
         });
         break;
