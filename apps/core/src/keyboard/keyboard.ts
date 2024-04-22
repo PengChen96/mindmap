@@ -98,10 +98,11 @@ class Keyboard {
       }
     } else if (!metaKey && !shiftKey && !ctrlKey) {
       switch (key) {
-        case 'Enter': {
-          toolOperation.addBrotherNode();
-          break;
-        }
+        // todo 因为跟editor的监听事件冲突，暂时移除
+        // case 'Enter': {
+        //   toolOperation.addBrotherNode();
+        //   break;
+        // }
         case 'Tab': {
           const selectNodes = selection.getSelectNodes();
           if (selectNodes.length > 0) {
