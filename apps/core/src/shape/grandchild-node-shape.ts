@@ -12,6 +12,8 @@ export function createGrandchildNodeShape(options: NodeShapeOptions): NodeShape 
       'font-size': fontSize,
     },
     rectBaseAttr: {
+      'fill': '#fafafa',
+      'fill-opacity': 1,
       'stroke-opacity': 0,
     },
     paddingWidth,

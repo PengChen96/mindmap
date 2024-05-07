@@ -8,6 +8,10 @@ import { DepthType } from './helper';
 import DataHandler from './data/data-handler';
 import PaperWrapper from './paper-wrapper';
 import { isMobile } from './helper';
+import React from "react";
+import { createRoot } from 'react-dom/client';
+import Editor from "./component/Editor";
+import {NodeDataMap} from "./types";
 
 const fontSizeMap = {
   [DepthType.root]: rootFontSize,
@@ -23,6 +27,8 @@ class TextEditor {
   private node: Node | null = null; // 当前操作的节点，需要看见的时候才算操作
   private isShow: boolean = false;
   private isComposition: boolean = false;
+  private editorValue: string | undefined;
+  private editor: any;
   public constructor({
     viewport,
     selection,
@@ -93,6 +99,12 @@ class TextEditor {
   }
 
   public showBySelectionLabel(): void {
+    console.log('1111', this.node.label);
+    const blocks = typeof this.node?.label === "string" ? [{type: "paragraph", content: this.node?.label}] : this.node?.label.filter(v=>v.content.length >0);
+    this.editor.removeBlocks(this.editor.document)
+    console.log("document", this.editor.document, blocks)
+    this.editor.insertBlocks(blocks, this.editor.document[0].id, 'before');
+
     this.show();
     this.editorDom.innerText = this.node?.label || '';
 
@@ -115,6 +127,7 @@ class TextEditor {
   public hide(): void {
     this.editorWrapperDom.style.zIndex = '-9999';
     this.editorDom.innerText = '';
+    this.editorValue = '';
     this.isShow = false;
   }
 
@@ -140,12 +153,23 @@ class TextEditor {
     editorWrapperDom.className = 'node-edit-text-wrapper';
 
     const editorDom = document.createElement('div');
-    editorDom.className = 'node-edit-text';
-    editorDom.setAttribute('contenteditable', 'true');
+    // editorDom.style = 'background: bisque;';
+
+    const editorBox = document.createElement('div');
+    const root = createRoot(editorBox);
+    root.render(<Editor
+      getEditor={(editor: any) => this.editor = editor}
+      onChange={(doc: string | undefined) => this.editorValue = doc}
+    />);
+
+    // const editorDom = document.createElement('div');
+    // editorDom.className = 'node-edit-text';
+    // editorDom.setAttribute('contenteditable', 'true');
 
     const containerDom = paperWrapper.getContainerDom();
 
-    editorWrapperDom.appendChild(editorDom);
+    // editorWrapperDom.appendChild(editorDom);
+    editorWrapperDom.appendChild(editorBox);
     containerDom.appendChild(editorWrapperDom);
 
     return {
@@ -161,8 +185,8 @@ class TextEditor {
 
   private translate() {
     if (this.node === null) return;
-
-    const { cx, cy } = this.node.getLabelBBox();
+    // const { cx, cy } = this.node.getLabelBBox();
+    const { cx, cy } = this.node.getBBox();
     const { offsetX, offsetY } = this.viewport.getOffsetPosition(cx, cy);
     const scale = this.viewport.getScale();
 
@@ -170,12 +194,13 @@ class TextEditor {
 
     const editorDomHeight = (1.4 * fontSize + 6) * scale;
 
-    this.editorWrapperDom.style.left = `${offsetX - 300}px`;
-    this.editorWrapperDom.style.top = `${offsetY - editorDomHeight / 2}px`;
+    this.editorWrapperDom.style.left = `${offsetX - 200}px`;
+    this.editorWrapperDom.style.top = `${offsetY - editorDomHeight}px`;
   }
 
   private setLabel(): void {
-    const newLabel = this.editorDom.innerText;
+    const newLabel = this.editorValue || this.editorDom.innerText;
+    console.log(newLabel, 'newLabel')
     if (this.node !== null && this.isShow && newLabel !== this.node.label) {
       this.dataHandler.update(this.node.id, {
         label: newLabel,

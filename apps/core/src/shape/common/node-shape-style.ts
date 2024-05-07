@@ -76,7 +76,7 @@ class NodeShapeStyle {
   }
 
   public setBaseStyle(): void {
-    this.labelShape.attr(this.labelBaseAttr);
+    // this.labelShape.attr(this.labelBaseAttr);
     this.borderShape.attr(this.borderBaseAttr);
     this.rectShape.attr(this.rectBaseAttr);
     this.buttonShape && this.buttonShape.attr(this.buttonBaseAttr);

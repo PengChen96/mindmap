@@ -48,11 +48,12 @@ class Keyboard {
           textEditor.hide();
           break;
         }
-        case 'Tab':
-        case 'Enter': {
-          textEditor.finishEdit();
-          break;
-        }
+        // todo 因为和editor会冲突
+        // case 'Tab':
+        // case 'Enter': {
+        //   textEditor.finishEdit();
+        //   break;
+        // }
       }
       return;
     }

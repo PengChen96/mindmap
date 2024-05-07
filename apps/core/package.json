@@ -33,6 +33,8 @@
   "author": "RockyRen",
   "license": "MIT",
   "dependencies": {
+    "@blocknote/core": "^0.12.4",
+    "@blocknote/react": "^0.12.4",
     "eventemitter3": "^5.0.0",
     "raphael": "^2.3.0",
     "react": "^18.2.0",

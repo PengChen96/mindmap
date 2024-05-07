@@ -35,6 +35,7 @@ export interface NodeShapeOptions {
 class NodeShape {
   private readonly paper: RaphaelPaper;
   private readonly shapeSet: RaphaelSet;
+  private readonly textShapeSet: RaphaelSet;
   private readonly borderShape: RaphaelElement;
   private readonly labelShape: RaphaelElement;
   private readonly rectShape: RaphaelElement;
@@ -65,7 +66,7 @@ class NodeShape {
     link,
   }: NodeShapeOptions) {
     this.paper = paper;
-    this.label = label;
+    this.label = typeof label === 'string' ? [{type: "paragraph", content: label}] : label;
     this.paddingWidth = paddingWidth;
     this.rectHeight = rectHeight;
 
@@ -74,14 +75,83 @@ class NodeShape {
     const shapeX = hasValidPosition ? x : invisibleX;
     const shapeY = hasValidPosition ? y : invisibleY;
 
-    this.labelShape = paper.text(shapeX, shapeY, label);
-    this.labelShape.attr({
+    // this.labelShape = paper.text(shapeX, shapeY, label);
+    // this.labelShape.attr({
+    //   "text-anchor": "start", // 设置文本居左
+    // });
+
+    // this.textShape = paper.text(shapeX, shapeY, "label");
+    // this.textShapeSet = paper.set()
+    //   // .push(this.labelShape)
+    //   .push(this.textShape);
+    // const labelList = [
+    //   {
+    //     "id": "5c086956-2eeb-4b33-8c96-a7bd8baf20fd",
+    //     "type": "paragraph",
+    //     "props": {
+    //       "textColor": "default",
+    //       "backgroundColor": "default",
+    //       "textAlignment": "left",
+    //       "level": 1
+    //     },
+    //     "content": [
+    //       {
+    //         "type": "text",
+    //         "text": "前腾讯",
+    //         "styles": {
+    //           "text-decoration": "underline"
+    //         }
+    //       },
+    //       {
+    //         "type": "text",
+    //         "text": "棒球",
+    //         "styles": {
+    //           "bold": true,
+    //           "textColor": "red"
+    //         }
+    //       }
+    //     ],
+    //     "children": []
+    //   },
+    //   {
+    //     "id": "5c086956-2eeb-4b33-8c96-a7bd8baf20fd",
+    //     "type": "paragraph",
+    //     "props": {
+    //       "textColor": "default",
+    //       "backgroundColor": "default",
+    //       "textAlignment": "left",
+    //       "level": 1
+    //     },
+    //     "content": [
+    //       {
+    //         "type": "text",
+    //         "text": "前腾讯22",
+    //         "styles": {
+    //         }
+    //       },
+    //       {
+    //         "type": "text",
+    //         "text": "棒球22",
+    //         "styles": {
+    //           "bold": true,
+    //         }
+    //       }
+    //     ],
+    //     "children": []
+    //   }
+    // ];
+    this.textShapeSet = this.getTextShapeSet({ paper, shapeX, shapeY, labelList: this.label });
+    // this.labelShape = this.textShapeSet;
+    console.log('textShapeSet',this.textShapeSet.getBBox());
+    this.textShapeSet.attr({
       "text-anchor": "start", // 设置文本居左
     });
+
     this.borderShape = paper.rect(shapeX, shapeY, 0, 0, 4);
     this.rectShape = paper.rect(shapeX, shapeY, 0, 0, 4);
     this.shapeSet = paper.set()
-      .push(this.labelShape)
+      .push(this.textShapeSet)
+      // .push(this.labelShape)
       .push(this.borderShape)
       .push(this.rectShape);
 
@@ -127,9 +197,10 @@ class NodeShape {
     });
     this.nodeShapeStyle.setBaseStyle();
 
-    this.labelShape.toFront();
+    this.textShapeSet.toFront();
+    // this.labelShape?.toFront();
     // @ts-ignore
-    this.labelShape.node.style['user-select'] = 'none';
+    // this.labelShape.node.style['user-select'] = 'none';
 
     this.setPosition(shapeX, shapeY);
     this.shapeEventEmitter = new ShapeEventEmitter(this.shapeSet);
@@ -139,6 +210,51 @@ class NodeShape {
     }
 
     this.initHover();
+  }
+  private getValidKeyValueMap = (key="textColor", value="red") => {
+    const keyMap = {
+      "textColor": "fill",
+      "bold": 'font-weight'
+    }
+    const valueMap = {
+      textColor: null,
+      bold: {
+        true: 700
+      }
+    }
+    return {
+      key: keyMap[key] || key,
+      value: valueMap[key] ? valueMap[key][value] : value
+    }
+  }
+  private setTextStyle = (shape, label) => {
+    shape.attr({ 'font-size': 13 });
+    shape.node.childNodes.forEach((el, index) => {
+      el.removeAttribute('x');
+      el.removeAttribute('dy');
+      const contentObj = label.content[index];
+      if (contentObj && contentObj.styles && Object.keys(contentObj.styles).length > 0) {
+        // el.setAttribute('fill', "red");
+        Object.keys(contentObj.styles).forEach((key) => {
+          const data = this.getValidKeyValueMap(key, contentObj.styles[key]);
+          el.setAttribute(data.key, data.value);
+        });
+      }
+    });
+  }
+  // @ts-ignore
+  private getTextShapeSet({ paper, shapeX, shapeY, labelList }) {
+    const textShapeSet = paper.set();
+    labelList.forEach((label, index) => {
+      const contentText = typeof label?.content === 'string' ? label.content : label?.content?.map((v)=>v.text).join('\n');
+      if (!contentText) {
+        return;
+      }
+      const shape = paper.text(shapeX, shapeY+index*20, contentText);
+      this.setTextStyle(shape, label);
+      textShapeSet.push(shape);
+    });
+    return textShapeSet;
   }
 
   public getBBox(): RaphaelAxisAlignedBoundingBox {
@@ -150,13 +266,28 @@ class NodeShape {
   }
 
   public setLabel(label: string, direction?: Direction): void {
-    const beforeLabelBBox = this.labelShape.getBBox();
-    this.labelShape.attr({
-      text: label,
-    });
-    const afterLabelBBox = this.labelShape.getBBox();
-
     const bbox = this.getBBox();
+    const beforeLabelBBox = this.textShapeSet.getBBox();
+
+    // this.labelShape.attr({
+    //   text: JSON.stringify(label),
+    // });
+    this.textShapeSet.remove();
+    label?.forEach((label, index) => {
+      const content = label.content.map((v)=>v.text).join('\n');
+      if (!content) {
+        return;
+      }
+      const contentText = content || "";
+      const shape = this.paper.text(beforeLabelBBox.x, beforeLabelBBox.y + index * 20, contentText);
+      this.setTextStyle(shape, label);
+      this.textShapeSet.push(shape);
+    });
+    this.textShapeSet.attr({
+      "text-anchor": "start", // 设置文本居左
+    });
+
+    const afterLabelBBox = this.textShapeSet.getBBox();
     const diff = afterLabelBBox.width - beforeLabelBBox.width;
 
     this.setPosition(bbox.x, bbox.y);
@@ -231,7 +362,8 @@ class NodeShape {
   public toFront(): void {
     this.borderShape.toFront();
     this.rectShape.toFront();
-    this.labelShape.toFront();
+    this.labelShape?.toFront();
+    this.textShapeSet.toFront();
   }
 
   public isInvisible(): boolean {
@@ -250,14 +382,14 @@ class NodeShape {
   }
 
   private setPosition(x: number, y: number): void {
-    const { labelShape, borderShape, rectShape, imageShape, buttonShape, paddingWidth, rectHeight, imageData } = this;
+    const { borderShape, rectShape, imageShape, textShapeSet, buttonShape, paddingWidth, rectHeight, imageData } = this;
 
     // const labelBBox = labelShape.getBBox();
     // const paddingHeight = rectHeight - labelBBox.height;
     const paddingHeight = 20;
 
-    const leftShape = imageData?.toward === 'right' ? labelShape : imageShape;
-    const rightShape = imageData?.toward === 'right' ? imageShape : labelShape;
+    const leftShape = imageData?.toward === 'right' ? textShapeSet : imageShape;
+    const rightShape = imageData?.toward === 'right' ? imageShape : textShapeSet;
     const defaultBBox = { x: 0, y: 0, width: 0, height: 0 };
     const leftBBox = leftShape?.getBBox() || defaultBBox;
     const rightBBox = rightShape?.getBBox() || defaultBBox;
