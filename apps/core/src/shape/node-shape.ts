@@ -66,7 +66,7 @@ class NodeShape {
     link,
   }: NodeShapeOptions) {
     this.paper = paper;
-    this.label = typeof label === 'string' ? [{type: "paragraph", content: label}] : label;
+    this.label = typeof label === 'string' ? label.split('\n').map((text) =>({type: "paragraph", content: text})) : label;
     this.paddingWidth = paddingWidth;
     this.rectHeight = rectHeight;
 
@@ -214,12 +214,24 @@ class NodeShape {
   private getValidKeyValueMap = (key="textColor", value="red") => {
     const keyMap = {
       "textColor": "fill",
-      "bold": 'font-weight'
+      "bold": 'font-weight',
+      "italic": 'font-style',
+      "underline": "text-decoration",
+      "strike": "text-decoration",
     }
     const valueMap = {
       textColor: null,
       bold: {
         true: 700
+      },
+      underline: {
+        true: "underline"
+      },
+      strike: {
+        true: "line-through"
+      },
+      italic: {
+        true: "italic"
       }
     }
     return {
@@ -228,7 +240,6 @@ class NodeShape {
     }
   }
   private setTextStyle = (shape, label) => {
-    shape.attr({ 'font-size': 13 });
     shape.node.childNodes.forEach((el, index) => {
       el.removeAttribute('x');
       el.removeAttribute('dy');
@@ -242,15 +253,28 @@ class NodeShape {
       }
     });
   }
+  private getFontSize = (label: { props: { level: string | number; }; }) => {
+    const fontSizeMap = {
+      1: 24,
+      2: 20,
+      3: 16,
+    }
+    // @ts-ignore
+    return fontSizeMap[label?.props?.level] || 13;
+  }
   // @ts-ignore
   private getTextShapeSet({ paper, shapeX, shapeY, labelList }) {
     const textShapeSet = paper.set();
+    let _shapeY = shapeY;
     labelList.forEach((label, index) => {
       const contentText = typeof label?.content === 'string' ? label.content : label?.content?.map((v)=>v.text).join('\n');
       if (!contentText) {
         return;
       }
-      const shape = paper.text(shapeX, shapeY+index*20, contentText);
+      const fontSize = this.getFontSize(label);
+      _shapeY = _shapeY + fontSize + 7;
+      const shape = paper.text(shapeX, _shapeY, contentText);
+      shape.attr({ 'font-size': fontSize });
       this.setTextStyle(shape, label);
       textShapeSet.push(shape);
     });
@@ -273,14 +297,18 @@ class NodeShape {
     //   text: JSON.stringify(label),
     // });
     this.textShapeSet.remove();
-    label?.forEach((label, index) => {
-      const content = label.content.map((v)=>v.text).join('\n');
+    let _shapeY = beforeLabelBBox.y;
+    label?.forEach((lb) => {
+      const content = lb.content.map((v)=>v.text).join('\n');
       if (!content) {
         return;
       }
       const contentText = content || "";
-      const shape = this.paper.text(beforeLabelBBox.x, beforeLabelBBox.y + index * 20, contentText);
-      this.setTextStyle(shape, label);
+      const fontSize = this.getFontSize(lb);
+      _shapeY = _shapeY + fontSize + 7;
+      const shape = this.paper.text(beforeLabelBBox.x, _shapeY, contentText);
+      shape.attr({ 'font-size': fontSize });
+      this.setTextStyle(shape, lb);
       this.textShapeSet.push(shape);
     });
     this.textShapeSet.attr({

@@ -11,7 +11,6 @@ import { isMobile } from './helper';
 import React from "react";
 import { createRoot } from 'react-dom/client';
 import Editor from "./component/Editor";
-import {NodeDataMap} from "./types";
 
 const fontSizeMap = {
   [DepthType.root]: rootFontSize,
@@ -151,6 +150,8 @@ class TextEditor {
   } {
     const editorWrapperDom = document.createElement('div');
     editorWrapperDom.className = 'node-edit-text-wrapper';
+    editorWrapperDom.style.height = '300px';
+    editorWrapperDom.style.overflow = 'auto';
 
     const editorDom = document.createElement('div');
     // editorDom.style = 'background: bisque;';
