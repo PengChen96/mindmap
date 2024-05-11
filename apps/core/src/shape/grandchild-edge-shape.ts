@@ -25,7 +25,7 @@ export class GrandchildEdgeShape {
       targetBBox,
       direction,
       targetDepth,
-      hasUnder: true,
+      hasUnder: false,
     });
 
     this.shape.attr({

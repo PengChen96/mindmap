@@ -65,11 +65,14 @@ export const drawGrandChildEdge = ({
     targetUnderEndX = targetBBox.x;
   }
 
-  if (targetDepth === 2) {
-    shortY = sourceBBox.cy;
-  } else {
-    shortY = sourceBBox.y2;
-  }
+  shortY = sourceBBox.cy;
+  // if (targetDepth === 2) {
+  //   // 线起点在中间面
+  //   shortY = sourceBBox.cy;
+  // } else {
+  //   // 线起点在下面
+  //   shortY = sourceBBox.y2;
+  // }
 
   connectY = shortY;
   targetY = hasUnder ? targetBBox.y2 : targetBBox.cy;
