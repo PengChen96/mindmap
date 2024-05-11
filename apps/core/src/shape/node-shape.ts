@@ -239,11 +239,11 @@ class NodeShape {
       value: valueMap[key] ? valueMap[key][value] : value
     }
   }
-  private setTextStyle = (shape, label) => {
+  private setTextStyle = (shape, content) => {
     shape.node.childNodes.forEach((el, index) => {
       el.removeAttribute('x');
       el.removeAttribute('dy');
-      const contentObj = label.content[index];
+      const contentObj = content[index];
       if (contentObj && contentObj.styles && Object.keys(contentObj.styles).length > 0) {
         // el.setAttribute('fill', "red");
         Object.keys(contentObj.styles).forEach((key) => {
@@ -262,21 +262,58 @@ class NodeShape {
     // @ts-ignore
     return fontSizeMap[label?.props?.level] || 13;
   }
+
+  private splitTextArray = (inputArray: { type: string; text: string; styles: any; }[]) => {
+    let resultArray = [];
+    let tempArray: { type: string; text: string; styles: any; }[] = [];
+    let tempArrayLen = 0;
+    const defaultMaxLen = 50;
+
+    inputArray.forEach(item => {
+      let text = item.text;
+      let styles = item.styles;
+
+      let splitLen = defaultMaxLen - tempArrayLen;
+      while (text.length > splitLen) {
+        let newText = text.substring(0, splitLen);
+        text = text.substring(splitLen);
+        tempArray.push({ type: item.type, text: newText, styles: styles });
+        resultArray.push(tempArray);
+        tempArray = [];
+        tempArrayLen = 0;
+        splitLen = defaultMaxLen;
+      }
+
+      if (text.length > 0) {
+        tempArray.push({ type: item.type, text: text, styles: styles });
+        tempArrayLen += text.length;
+      }
+    });
+    if (tempArrayLen>0) {
+      resultArray.push(tempArray);
+    }
+    return resultArray;
+  }
   // @ts-ignore
   private getTextShapeSet({ paper, shapeX, shapeY, labelList }) {
     const textShapeSet = paper.set();
     let _shapeY = shapeY;
     labelList.forEach((label, index) => {
-      const contentText = typeof label?.content === 'string' ? label.content : label?.content?.map((v)=>v.text).join('\n');
-      if (!contentText) {
-        return;
-      }
+
       const fontSize = this.getFontSize(label);
-      _shapeY = _shapeY + fontSize + 7;
-      const shape = paper.text(shapeX, _shapeY, contentText);
-      shape.attr({ 'font-size': fontSize });
-      this.setTextStyle(shape, label);
-      textShapeSet.push(shape);
+      const splitContentArray = this.splitTextArray(label.content);
+      splitContentArray.forEach((content) => {
+        const text = content.map((v)=>v.text).join('\n');
+        if (!text) {
+          return;
+        }
+        _shapeY = _shapeY + fontSize + 7;
+        const shape = paper.text(shapeX, _shapeY, text);
+        shape.attr({ 'font-size': fontSize });
+        this.setTextStyle(shape, content);
+        textShapeSet.push(shape);
+      });
+
     });
     return textShapeSet;
   }
@@ -297,19 +334,22 @@ class NodeShape {
     //   text: JSON.stringify(label),
     // });
     this.textShapeSet.remove();
+    const shapeX = beforeLabelBBox.x;
     let _shapeY = beforeLabelBBox.y;
     label?.forEach((lb) => {
-      const content = lb.content.map((v)=>v.text).join('\n');
-      if (!content) {
-        return;
-      }
-      const contentText = content || "";
       const fontSize = this.getFontSize(lb);
-      _shapeY = _shapeY + fontSize + 7;
-      const shape = this.paper.text(beforeLabelBBox.x, _shapeY, contentText);
-      shape.attr({ 'font-size': fontSize });
-      this.setTextStyle(shape, lb);
-      this.textShapeSet.push(shape);
+      const splitContentArray = this.splitTextArray(lb.content);
+      splitContentArray.forEach((content) => {
+        const text = content.map((v)=>v.text).join('\n');
+        if (!text) {
+          return;
+        }
+        _shapeY = _shapeY + fontSize + 7;
+        const shape = this.paper.text(shapeX, _shapeY, text);
+        shape.attr({ 'font-size': fontSize });
+        this.setTextStyle(shape, content);
+        this.textShapeSet.push(shape);
+      });
     });
     this.textShapeSet.attr({
       "text-anchor": "start", // 设置文本居左
