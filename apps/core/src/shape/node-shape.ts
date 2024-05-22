@@ -270,11 +270,11 @@ class NodeShape {
     const defaultMaxLen = 50;
 
     inputArray.forEach(item => {
-      let text = item.text;
+      let text = item.text || '';
       let styles = item.styles;
 
       let splitLen = defaultMaxLen - tempArrayLen;
-      while (text.length > splitLen) {
+      while (text?.length > splitLen) {
         let newText = text.substring(0, splitLen);
         text = text.substring(splitLen);
         tempArray.push({ type: item.type, text: newText, styles: styles });
